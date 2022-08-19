@@ -18,12 +18,24 @@
     <ClCompile Include="src\aclock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Clock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PGE.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\olcPGEX_Sound.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\olcPixelGameEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PGE.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Clock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
