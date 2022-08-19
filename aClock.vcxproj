@@ -145,10 +145,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\aclock.cpp" />
+    <ClCompile Include="src\Clock.cpp" />
+    <ClCompile Include="src\PGE.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Clock.h" />
     <ClInclude Include="include\olcPGEX_Sound.h" />
     <ClInclude Include="include\olcPixelGameEngine.h" />
+    <ClInclude Include="include\PGE.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
