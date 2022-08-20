@@ -6,7 +6,19 @@ void Clock::Draw(olc::vi2d pos) {
 	currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 	localtime_s(&now, &currentTime);
 
-	strTime = std::to_string(now.tm_hour) + ":" + std::to_string(now.tm_min) + ":" + std::to_string(now.tm_sec);
+	auto strtmp = std::to_string(now.tm_hour);
+	auto strHour = std::string(2 - std::min(2, int(strtmp.length())), '0') + strtmp;
+
+	strtmp = std::to_string(now.tm_min);
+	auto strMin = std::string(2 - std::min(2, int(strtmp.length())), '0') + strtmp;
+
+	strtmp = std::to_string(now.tm_sec);
+	auto strSec = std::string(2 - std::min(2, int(strtmp.length())), '0') + strtmp;
+
+	// strTime = std::to_string(now.tm_hour) + ":" + std::to_string(now.tm_min) + ":" + std::to_string(now.tm_sec);
+	strTime = strHour + ":" + strMin + ":" + strSec;
+
+
 
 	// digital clock
 	if (showDigital) {
@@ -20,33 +32,16 @@ void Clock::Draw(olc::vi2d pos) {
 	int secDeg = int((secRes * now.tm_sec)) % 360;
 	int minDeg = int((minRes * now.tm_min)) % 360;
 	int hourDeg = int((hourRes * now.tm_hour)) % 360;
-	// strTime = std::to_string( secDeg );
-	// DrawString({ 50, 150 }, strTime);
 
 	float secRad = secDeg * M_PI / 180.0f;
 	float minRad = minDeg * M_PI / 180.0f;
 	float hourRad = hourDeg * M_PI / 180.0f;
-	// strTime = std::to_string(hourRad) + " " + std::to_string(hourDeg);
-	// DrawString({ 50, 160 }, strTime);
-
-	// polar coordinate trickery
-	// olc::vi2d origo{ pge->ScreenWidth() / 2, pge->ScreenHeight() / 2 };
 
 	olc::vf2d secEndpoint;
 	olc::vf2d minEndpoint;
 	olc::vf2d hourEndpoint;
 
-	// secRadius *= scale;
-	// minRadius *= scale;
-	// hourRadius *= scale;
-
-	// secEndpoint.x = origo.x + secRadius * cos(secRad - M_PI / 2);
-	// secEndpoint.y = origo.y + secRadius * sin(secRad - M_PI / 2);
-	// minEndpoint.x = origo.x + minRadius * cos(minRad - M_PI / 2);
-	// minEndpoint.y = origo.y + minRadius * sin(minRad - M_PI / 2);
-	// hourEndpoint.x = origo.x + hourRadius * cos(hourRad - M_PI / 2);
-	// hourEndpoint.y = origo.y + hourRadius * sin(hourRad - M_PI / 2);
-
+	// subtract 90 degrees so we get 0 at north, or 12 o'clock if you will
 	secEndpoint.x = origo.x + (clockRadius-10) * cos(secRad - M_PI / 2);
 	secEndpoint.y = origo.y + (clockRadius - 10) * sin(secRad - M_PI / 2);
 	minEndpoint.x = origo.x + (clockRadius - 10) * cos(minRad - M_PI / 2);

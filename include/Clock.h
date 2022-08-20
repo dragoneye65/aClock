@@ -18,6 +18,14 @@ public:
 		clockRadius = r;
 	}
 
+	void toggleDigitalClock() {
+		showDigital = !showDigital;
+	}
+
+	void toggleBigFour() {
+		showBigFourNumbers = !showBigFourNumbers;
+	}
+
 private:
 	std::time_t currentTime;
 	std::tm now;
