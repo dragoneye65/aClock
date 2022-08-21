@@ -1,3 +1,18 @@
+/*
+* A little transparent rudementary analog clock made with olcPixelGameEngine
+* Made it for own use, but feel free to use it if you find it useful
+*
+* PixelGameEngine  https://github.com/OneLoneCoder/olcPixelGameEngine
+*
+* Mouse Left klikk: toggle show numbers + digital clock
+* Mouse right klikk, hold and drag for moving the clock
+*
+* Written by Dragoneye, 2022/08/21
+*
+*/
+
+
+
 #pragma once
 #include <chrono>
 #include <ctime>
@@ -14,15 +29,15 @@ public:
 	}
 
 	void Draw(olc::vi2d pos);
-	void setRadius(int r) {
+	void SetRadius(float r) {
 		clockRadius = r;
 	}
 
-	void toggleDigitalClock() {
+	void ToggleDigitalClock() {
 		showDigital = !showDigital;
 	}
 
-	void toggleBigFour() {
+	void ToggleBigFour() {
 		showBigFourNumbers = !showBigFourNumbers;
 	}
 
@@ -40,7 +55,7 @@ private:
 	olc::vi2d origo;
 	float scale{ 1.0f };
 	olc::PixelGameEngine* pge;
-	bool showDigital{ false };
-	bool showBigFourNumbers{ false };
+	bool showDigital{ true };
+	bool showBigFourNumbers{ true };
 
 };

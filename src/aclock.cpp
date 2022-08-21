@@ -1,3 +1,16 @@
+/*
+* A little transparent rudementary analog clock made with olcPixelGameEngine
+* Made it for own use, but feel free to use it if you find it useful
+*
+* PixelGameEngine  https://github.com/OneLoneCoder/olcPixelGameEngine
+*
+* Mouse Left klikk: toggle show numbers + digital clock
+* Mouse right klikk, hold and drag for moving the clock
+* 
+* Written by Dragoneye, 2022/08/21
+* 
+*/
+
 #include "PGE.h"
 
 #include <chrono>
@@ -6,47 +19,28 @@
 #include "Clock.h"
 
 
-/*
-#include <GL/gl.h>
-#include <GL/GLU.h>
-#include "glcorearb.h"
+// transparancy in Windows only supported for now. ( need sleep xD )
+#if defined(_WIN32) && !defined(__MINGW32__)
+HWND SetTransparacy() {
 
-typedef char GLchar;
-#define GL_MAX_DEBUG_MESSAGE_LENGTH 256
+	DWORD dwExStyle = WS_EX_LAYERED;
+	DWORD dwStyle = WS_VISIBLE | WS_POPUP;
 
-void GetFirstNMessages(GLuint numMsgs)
-{
-	GLint maxMsgLen = 0;
-	glGetIntegerv(GL_MAX_DEBUG_MESSAGE_LENGTH, &maxMsgLen);
+	// get the window handle 
+	HWND hWnd = GetForegroundWindow();
 
-	std::vector<GLchar> msgData(numMsgs * maxMsgLen);
-	std::vector<GLenum> sources(numMsgs);
-	std::vector<GLenum> types(numMsgs);
-	std::vector<GLenum> severities(numMsgs);
-	std::vector<GLuint> ids(numMsgs);
-	std::vector<GLsizei> lengths(numMsgs);
+	// set the new extended style and style flags to the existing window
+	SetWindowLongW(hWnd, GWL_EXSTYLE, dwExStyle);
+	SetWindowLongW(hWnd, GWL_STYLE, dwStyle);
 
-	GLuint numFound = glGetDebugMessageLog(numMsgs, msgs.size(), 
-			&sources[0], &types[0], &ids[0], &severities[0], &lengths[0], &msgData[0]);
+	// Use crKey as the transparency color. In our case it is black
+	// BOOL SetLayeredWindowAttributes(HWND hwnd,COLORREF crKey, BYTE bAlpha, DWORD dwFlags);
+	SetLayeredWindowAttributes(hWnd, RGB(0, 0, 0), 0x0, LWA_COLORKEY);
 
-	sources.resize(numFound);
-	types.resize(numFound);
-	severities.resize(numFound);
-	ids.resize(numFound);
-	lengths.resize(numFound);
-
-	std::vector<std::string> messages;
-	messages.reserve(numFound);
-
-	std::vector<GLchar>::iterator currPos = msgData.begin();
-	for (size_t msg = 0; msg < lengths.size(); ++msg)
-	{
-		messages.push_back(std::string(currPos, currPos + lengths[msg] - 1));
-		currPos = currPos + lengths[msg];
-	}
+	return hWnd;
+	
 }
-*/
-
+#endif
 
 
 class App : public olc::PixelGameEngine
@@ -58,35 +52,63 @@ public:
 	}
 
 	Clock myClock{this};
+	std::unique_ptr<olc::Sprite> sprBackground;
+	std::unique_ptr<olc::Decal> decBackground;
+
+	std::unique_ptr<olc::Sprite> sprClock;
+	std::unique_ptr<olc::Decal> decClock;
+
+	#if defined(_WIN32) && !defined(__MINGW32__)
+		POINT mPoint;
+		HWND hWnd;
+	#endif
 
 public:
 	bool OnUserCreate() override
 	{
 		// Called once at the start, so create things here
 
+		// TRANSPARANCY, yay!   (Windows only for now!)
+		#if defined(_WIN32) && !defined(__MINGW32__)
+			hWnd = SetTransparacy();
+		#endif
 
-		// glEnable(GL_DEBUG_OUTPUT);
-
+		sprClock = std::make_unique<olc::Sprite>(ScreenWidth(), ScreenHeight());
+		decClock = std::make_unique<olc::Decal>(sprClock.get());
 		return true;
 	}
 
+
+
 	bool OnUserUpdate(float fElapsedTime) override
 	{
-		// called once per frame
-		// SetPixelMode(olc::Pixel::MASK);
-		Clear(olc::DARK_BLUE);
-		// Clear(olc::BLANK);
 
-		myClock.setRadius(90.0f);
-		myClock.Draw({ ScreenWidth()/2, (ScreenHeight()/2)+1 });
+		SetDrawTarget(sprClock.get());
+
+		Clear(olc::BLANK);
+		SetPixelMode(olc::Pixel::ALPHA);
+
+		myClock.SetRadius(90.0f);
+		myClock.Draw({ ScreenWidth() / 2, (ScreenHeight() / 2) + 1 });
+
+
+		decClock->Update();
+		DrawDecal({ 0,0 }, decClock.get());
+
+		if (GetMouse(1).bHeld) {
+			#if defined(_WIN32) && !defined(__MINGW32__)
+				GetCursorPos(&mPoint);
+				SetWindowPos( hWnd,	HWND_TOP, mPoint.x - ScreenWidth() / 2, mPoint.y - ScreenHeight() / 2, 0, 0, SWP_NOSIZE);
+			#endif
+		}
 
 		if (GetMouse(0).bReleased) {
-			myClock.toggleDigitalClock();
+			myClock.ToggleDigitalClock();
+			myClock.ToggleBigFour();
 		}
 
-		if (GetMouse(1).bReleased) {
-			myClock.toggleBigFour();
-		}
+		if (GetKey(olc::ESCAPE).bPressed)
+			return false;
 
 		return true;
 	}
@@ -101,8 +123,10 @@ int main()
 	return 0;
 }
 
-
+// Right click on your project -> Configuration Properties -> Linker -> System -> SubSystem   set the Windows (/SUBSYSTEM:WINDOWS)   option to get rid of the console window if you insist.
+#if defined(_WIN32) && !defined(__MINGW32__)
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
 	return main();
 }
+#endif

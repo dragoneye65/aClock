@@ -4095,8 +4095,6 @@ namespace olc
 	#define OGL_LOAD(t, n) n;
 #endif
 
-
-
 namespace olc
 {
 	typedef char GLchar;
