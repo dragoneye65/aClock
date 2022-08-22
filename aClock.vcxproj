@@ -136,6 +136,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -153,7 +154,9 @@
     <ClInclude Include="include\Clock.h" />
     <ClInclude Include="include\olcPGEX_Sound.h" />
     <ClInclude Include="include\olcPixelGameEngine.h" />
+    <ClInclude Include="include\olcSoundWaveEngine.h" />
     <ClInclude Include="include\PGE.h" />
+    <ClInclude Include="include\piano-3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

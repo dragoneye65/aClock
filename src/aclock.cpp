@@ -17,6 +17,7 @@
 #include <ctime>
 #include <string>
 #include "Clock.h"
+#include "piano-3.h"
 
 
 // transparancy in Windows only supported for now. ( need sleep xD )
@@ -45,6 +46,12 @@ HWND SetTransparacy() {
 
 class App : public olc::PixelGameEngine
 {
+
+protected: // Sound Specific
+	olc::sound::WaveEngine engine;
+	olc::sound::Wave pianoSample;
+
+
 public:
 	App()
 	{
@@ -63,7 +70,9 @@ public:
 		HWND hWnd;
 	#endif
 
+		bool playOnce{true};
 public:
+
 	bool OnUserCreate() override
 	{
 		// Called once at the start, so create things here
@@ -75,13 +84,20 @@ public:
 
 		sprClock = std::make_unique<olc::Sprite>(ScreenWidth(), ScreenHeight());
 		decClock = std::make_unique<olc::Decal>(sprClock.get());
+		
+		pianoSample.LoadAudioWaveform(  piano_wav, piano_wav_len);
+
 		return true;
 	}
 
 
-
 	bool OnUserUpdate(float fElapsedTime) override
 	{
+
+		if (playOnce) {
+			engine.PlayWaveform(&pianoSample);
+			playOnce = false;
+		}
 
 		SetDrawTarget(sprClock.get());
 
@@ -116,9 +132,9 @@ public:
 
 int main()
 {
-	App demo;
-	if (demo.Construct(256, 240, 1, 1, false, true))
-		demo.Start();
+	App aaaaClock;
+	if (aaaaClock.Construct(256, 240, 1, 1, false, true))
+		aaaaClock.Start();
 
 	return 0;
 }
