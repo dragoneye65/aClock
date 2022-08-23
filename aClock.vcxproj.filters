@@ -38,10 +38,10 @@
     <ClInclude Include="include\Clock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\piano-3.h">
+    <ClInclude Include="include\olcSoundWaveEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\olcSoundWaveEngine.h">
+    <ClInclude Include="include\pianoSample.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

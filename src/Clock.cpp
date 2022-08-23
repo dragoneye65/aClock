@@ -31,7 +31,7 @@ void Clock::Draw(olc::vi2d pos) {
 	strTime = strHour + ":" + strMin + ":" + strSec;
 
 	// draw the disk
-	pge->FillCircle({ pge->ScreenWidth() / 2, pge->ScreenHeight() / 2 }, 90, olc::VERY_DARK_BLUE);
+	pge->FillCircle({ pge->ScreenWidth() / 2, pge->ScreenHeight() / 2 }, 92, olc::VERY_DARK_BLUE);
 	pge->DrawCircle({ pge->ScreenWidth() / 2, pge->ScreenHeight() / 2 }, 92, olc::RED);
 
 	// digital clock

@@ -156,7 +156,7 @@
     <ClInclude Include="include\olcPixelGameEngine.h" />
     <ClInclude Include="include\olcSoundWaveEngine.h" />
     <ClInclude Include="include\PGE.h" />
-    <ClInclude Include="include\piano-3.h" />
+    <ClInclude Include="include\pianoSample.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

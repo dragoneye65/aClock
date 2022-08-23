@@ -17,7 +17,8 @@
 #include <ctime>
 #include <string>
 #include "Clock.h"
-#include "piano-3.h"
+// #include "piano-3.h"
+#include "pianoSample.h"
 
 
 // transparancy in Windows only supported for now. ( need sleep xD )
@@ -49,7 +50,7 @@ class App : public olc::PixelGameEngine
 
 protected: // Sound Specific
 	olc::sound::WaveEngine engine;
-	olc::sound::Wave pianoSample;
+	olc::sound::Wave testSound2;
 
 
 public:
@@ -70,7 +71,11 @@ public:
 		HWND hWnd;
 	#endif
 
-		bool playOnce{true};
+	// Play the sound once upon startup, false for not.
+	bool playOnce{false};
+
+
+
 public:
 
 	bool OnUserCreate() override
@@ -85,17 +90,20 @@ public:
 		sprClock = std::make_unique<olc::Sprite>(ScreenWidth(), ScreenHeight());
 		decClock = std::make_unique<olc::Decal>(sprClock.get());
 		
-		pianoSample.LoadAudioWaveform(  piano_wav, piano_wav_len);
+		engine.InitialiseAudio(16000, 1);
+		testSound2 = olc::sound::Wave(1, size_t(testSoundLen), 16000, testSoundLen);
+		for (size_t i = 0; i < testSoundLen; i++) {
+			testSound2.file.data()[i] = testSound[i];
+		}
 
 		return true;
 	}
-
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
 
 		if (playOnce) {
-			engine.PlayWaveform(&pianoSample);
+			engine.PlayWaveform( &testSound2);
 			playOnce = false;
 		}
 

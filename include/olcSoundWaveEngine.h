@@ -80,6 +80,49 @@
 
 
 /*
+	Using & Installing On Microsoft Windows
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	Microsoft Visual Studio
+	~~~~~~~~~~~~~~~~~~~~~~~
+	1) Include the header file "olcSoundWaveEngine.h" from a .cpp file in your project.
+	2) That's it!
+
+
+	Code::Blocks
+	~~~~~~~~~~~~
+	1) Make sure your compiler toolchain is NOT the default one installed with Code::Blocks. That
+		one is old, out of date, and a general mess. Instead, use MSYS2 to install a recent and
+		decent GCC toolchain, then configure Code::Blocks to use it
+
+		Guide for installing recent GCC for Windows:
+		https://www.msys2.org/
+		Guide for configuring code::blocks:
+		https://solarianprogrammer.com/2019/11/05/install-gcc-windows/
+		https://solarianprogrammer.com/2019/11/16/install-codeblocks-gcc-windows-build-c-cpp-fortran-programs/
+
+	2) Include the header file "olcSoundWaveEngine.h" from a .cpp file in your project.
+	3) Add these libraries to "Linker Options": user32 winmm
+	4) Set this "Compiler Option": -std=c++17
+*/
+
+
+
+/*
+	Using in multiple-file projects
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	If you intend to use olcSoundWaveEngine across multiple files, it's important to only have one
+	instance of the implementation. This is done using the compiler preprocessor definition: OLC_SOUNDWAVE
+
+	This is defined typically before the header is included in teh translation unit you wish the implementation
+	to be associated with. To avoid things getting messy I recommend you create	a file "olcSoundWaveEngine.cpp" 
+	and that file includes ONLY the following code:
+
+	#define OLC_SOUNDWAVE
+	#include "olcSoundWaveEngine.h"
+*/
+
+/*
 	0.01: olcPGEX_Sound.h reworked
 		  +Changed timekeeping to double, added accuracy fix - Thanks scripticuk
 		  +Concept of audio drivers and interface
@@ -148,6 +191,8 @@ namespace olc::sound
 			m_nSampleSize = nSampleSize;
 			m_nSamples = nSamples;
 			m_nSampleRate = nSampleRate;
+			m_dDuration = double(m_nSamples) / double(m_nSampleRate);
+			m_dDurationInSamples = double(m_nSamples);
 
 			m_pRawData = std::make_unique<T[]>(m_nSamples * m_nChannels);
 		}
@@ -265,6 +310,15 @@ namespace olc::sound
 						int16_t s = 0;
 						ifs.read((char*)&s, sizeof(int16_t));
 						*pSample = T(s) / T(std::numeric_limits<int16_t>::max());
+					}
+					break;
+
+					case 3: // 24-bit
+					{
+						int32_t s = 0;
+						ifs.read((char*)&s, 3);
+						if (s & (1 << 23)) s |= 0xFF000000;
+						*pSample = T(s) / T(std::pow(2, 23)-1);
 					}
 					break;
 
@@ -703,7 +757,11 @@ namespace olc::sound::driver
 
 #if defined(SOUNDWAVE_USING_SDLMIXER)
 
+#if defined(__EMSCRIPTEN__)
 #include <SDL2/SDL_mixer.h>
+#else
+#include <SDL_mixer.h>
+#endif
 
 namespace olc::sound::driver
 {
@@ -919,8 +977,8 @@ namespace olc::sound
 		WaveInstance wi;
 		wi.bLoop = bLoop;
 		wi.pWave = pWave;
-		wi.dSpeedModifier = dSpeed;
-		wi.dDuration = double(pWave->file.samples()) / double(pWave->file.samplerate()) / wi.dSpeedModifier;
+		wi.dSpeedModifier = dSpeed * double(pWave->file.samplerate()) / m_dSamplePerTime;
+		wi.dDuration = pWave->file.duration() / dSpeed;
 		wi.dInstanceTime = m_dGlobalTime;
 		m_listWaves.push_back(wi);
 		return std::prev(m_listWaves.end());
@@ -987,8 +1045,8 @@ namespace olc::sound
 						}
 						else
 						{
-							// OR, sample the waveform form the correct channel
-							fSample += float(wave.pWave->vChannelView[nChannel].GetSample(dTimeOffset * m_dSamplePerTime * wave.dSpeedModifier));
+							// OR, sample the waveform from the correct channel
+							fSample += float(wave.pWave->vChannelView[nChannel % wave.pWave->file.channels()].GetSample(dTimeOffset * m_dSamplePerTime * wave.dSpeedModifier));
 						}
 					}
 				}
