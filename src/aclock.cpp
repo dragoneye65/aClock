@@ -102,7 +102,7 @@ public:
 	bool OnUserUpdate(float fElapsedTime) override
 	{
 
-		if (playOnce) {
+		if (playOnce || GetKey(olc::SPACE).bPressed)  {
 			engine.PlayWaveform( &testSound2);
 			playOnce = false;
 		}
