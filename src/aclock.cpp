@@ -17,7 +17,6 @@
 #include <ctime>
 #include <string>
 #include "Clock.h"
-// #include "piano-3.h"
 #include "pianoSample.h"
 
 
@@ -60,11 +59,6 @@ public:
 	}
 
 	Clock myClock{this};
-	std::unique_ptr<olc::Sprite> sprBackground;
-	std::unique_ptr<olc::Decal> decBackground;
-
-	std::unique_ptr<olc::Sprite> sprClock;
-	std::unique_ptr<olc::Decal> decClock;
 
 	#if defined(_WIN32) && !defined(__MINGW32__)
 		POINT mPoint;
@@ -86,38 +80,28 @@ public:
 		#if defined(_WIN32) && !defined(__MINGW32__)
 			hWnd = SetTransparacy();
 		#endif
-
-		sprClock = std::make_unique<olc::Sprite>(ScreenWidth(), ScreenHeight());
-		decClock = std::make_unique<olc::Decal>(sprClock.get());
-		
+	
 		engine.InitialiseAudio(16000, 1);
 		testSound2 = olc::sound::Wave(1, size_t(testSoundLen), 16000, testSoundLen);
 		for (size_t i = 0; i < testSoundLen; i++) {
-			testSound2.file.data()[i] = testSound[i];
+			testSound2.file.data()[i] = static_cast<float>(testSound[i]);
 		}
+
+		myClock.Init();
 
 		return true;
 	}
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
+		Clear(olc::BLANK);
 
-		if (playOnce || GetKey(olc::SPACE).bPressed)  {
-			engine.PlayWaveform( &testSound2);
+		if (playOnce || GetKey(olc::SPACE).bPressed) {
+			engine.PlayWaveform(&testSound2);
 			playOnce = false;
 		}
 
-		SetDrawTarget(sprClock.get());
-
-		Clear(olc::BLANK);
-		SetPixelMode(olc::Pixel::ALPHA);
-
-		myClock.SetRadius(90.0f);
 		myClock.Draw({ ScreenWidth() / 2, (ScreenHeight() / 2) + 1 });
-
-
-		decClock->Update();
-		DrawDecal({ 0,0 }, decClock.get());
 
 		if (GetMouse(1).bHeld) {
 			#if defined(_WIN32) && !defined(__MINGW32__)
@@ -125,7 +109,7 @@ public:
 				SetWindowPos( hWnd,	HWND_TOP, mPoint.x - ScreenWidth() / 2, mPoint.y - ScreenHeight() / 2, 0, 0, SWP_NOSIZE);
 			#endif
 		}
-
+		
 		if (GetMouse(0).bReleased) {
 			myClock.ToggleDigitalClock();
 			myClock.ToggleBigFour();

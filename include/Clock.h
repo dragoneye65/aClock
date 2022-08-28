@@ -19,7 +19,7 @@
 #include <string>
 #define _USE_MATH_DEFINES
 #include <cmath>
-
+#include <filesystem>
 #include "PGE.h"
 
 class Clock {
@@ -28,6 +28,7 @@ public:
 		pge = engine;
 	}
 
+	void Init();
 	void Draw(olc::vi2d pos);
 	void SetRadius(float r) {
 		clockRadius = r;
@@ -58,4 +59,5 @@ private:
 	bool showDigital{ true };
 	bool showBigFourNumbers{ true };
 
+	olc::Renderable clockDisk, hourHandle, centerPin;
 };

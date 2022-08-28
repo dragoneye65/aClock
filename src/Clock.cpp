@@ -13,8 +13,31 @@
 
 #include "Clock.h"
 
+void Clock::Init() {
+	hourHandle.Load("res/images/hourHandle.png", nullptr, true);
+	centerPin.Load("res/images/centerPin.png", nullptr, true);
+	
+	clockDisk.Create( pge->ScreenWidth(), pge->ScreenHeight(), true);
+
+	SetRadius( (pge->ScreenHeight() / 2.0f) -1);
+
+	// std::cout << "w:" << clockDisk.Sprite()->width << ", h:" << clockDisk.Sprite()->height;
+	// std::filesystem::path p = std::filesystem::current_path();
+	// std::cout << "current path: " << p << "\n";
+
+
+	// sprClock = std::make_unique<olc::Sprite>(pge->ScreenWidth(), pge->ScreenHeight());
+	// decClock = std::make_unique<olc::Decal>(sprClock.get());
+
+
+}
+
 void Clock::Draw(olc::vi2d pos) {
 	origo = pos;
+
+	pge->SetDrawTarget(clockDisk.Sprite() );
+	// pge->Clear(olc::BLANK);
+	// pge->SetPixelMode(olc::Pixel::ALPHA);
 
 	currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 	localtime_s(&now, &currentTime);
@@ -31,8 +54,8 @@ void Clock::Draw(olc::vi2d pos) {
 	strTime = strHour + ":" + strMin + ":" + strSec;
 
 	// draw the disk
-	pge->FillCircle({ pge->ScreenWidth() / 2, pge->ScreenHeight() / 2 }, 92, olc::VERY_DARK_BLUE);
-	pge->DrawCircle({ pge->ScreenWidth() / 2, pge->ScreenHeight() / 2 }, 92, olc::RED);
+	pge->FillCircle({ pge->ScreenWidth() / 2, pge->ScreenHeight() / 2 }, clockRadius, olc::VERY_DARK_BLUE);
+	pge->DrawCircle({ pge->ScreenWidth() / 2, pge->ScreenHeight() / 2 }, clockRadius, olc::RED);
 
 	// digital clock
 	if (showDigital) {
@@ -51,21 +74,27 @@ void Clock::Draw(olc::vi2d pos) {
 	float minRad = float(minDeg * M_PI / 180.0f);
 	float hourRad = float(hourDeg * M_PI / 180.0f);
 
-	olc::vf2d secEndpoint;
+	olc::vf2d secEndpoint, secStartpoint;
 	olc::vf2d minEndpoint;
 	olc::vf2d hourEndpoint;
 
 	// subtract 90 degrees so we get 0 at north, or 12 o'clock if you will
 	secEndpoint.x = float(origo.x + (clockRadius - 10) * cos(secRad - M_PI / 2));
 	secEndpoint.y = float(origo.y + (clockRadius - 10) * sin(secRad - M_PI / 2));
+	secStartpoint.x = float(origo.x + (clockRadius - 50) * cos(secRad - M_PI / 2));
+	secStartpoint.y = float(origo.y + (clockRadius - 50) * sin(secRad - M_PI / 2));
 	minEndpoint.x = float(origo.x + (clockRadius - 20) * cos(minRad - M_PI / 2));
 	minEndpoint.y = float(origo.y + (clockRadius - 20) * sin(minRad - M_PI / 2));
 	hourEndpoint.x = float(origo.x + (clockRadius - 45) * cos(hourRad - M_PI / 2));
 	hourEndpoint.y = float(origo.y + (clockRadius - 45) * sin(hourRad - M_PI / 2));
 
-	pge->DrawLine(origo, hourEndpoint, olc::YELLOW);
-	pge->DrawLine(origo, minEndpoint, olc::GREEN);
-	pge->DrawLine(origo, secEndpoint, olc::RED);
+	// hour
+	// pge->DrawLine(origo, hourEndpoint, olc::YELLOW);
+	// minute
+	// pge->DrawLine(origo, minEndpoint, olc::GREEN);
+	// sec
+	// pge->DrawLine(origo, secEndpoint, olc::RED);
+	pge->DrawLine(secStartpoint, secEndpoint, olc::RED);
 
 	// draw the clock circle
 	olc::vf2d clockOuterMarker;
@@ -130,4 +159,32 @@ void Clock::Draw(olc::vi2d pos) {
 			}
 		}
 	}
+
+
+	pge->SetDrawTarget(nullptr);
+
+	clockDisk.Decal()->Update();
+	pge->DrawDecal({0,0}, clockDisk.Decal());
+
+	// hour handle
+	pge->DrawRotatedDecal(olc::vi2d{ pge->ScreenWidth() / 2, (pge->ScreenHeight() / 2) },
+		hourHandle.Decal(),
+		minRad,
+		olc::vi2d{ hourHandle.Sprite()->width / 2 , hourHandle.Sprite()->height+20 },
+		{ 0.3f, 0.6f });
+
+	// minute handle
+	pge->DrawRotatedDecal(olc::vi2d{ pge->ScreenWidth() / 2, (pge->ScreenHeight() / 2) },
+		hourHandle.Decal(),
+		hourRad,
+		olc::vi2d{ hourHandle.Sprite()->width / 2 , hourHandle.Sprite()->height + 50 },
+		{ 0.3f, 0.3f });
+
+	// middle nob, star
+	pge->DrawRotatedDecal( olc::vi2d{ pge->ScreenWidth() / 2, (pge->ScreenHeight() / 2)},
+		centerPin.Decal(),
+		M_PI/4,
+		olc::vi2d{ centerPin.Sprite()->width / 2 , centerPin.Sprite()->height / 2 },
+		{ 0.3f, 0.3f });
+
 }
