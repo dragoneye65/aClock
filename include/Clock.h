@@ -29,7 +29,7 @@ public:
 	}
 
 	void Init();
-	void Draw(olc::vi2d pos);
+	void Draw(olc::vi2d pos, float fElapsedTime);
 	void SetRadius(float r) {
 		clockRadius = r;
 	}
@@ -40,6 +40,14 @@ public:
 
 	void ToggleBigFour() {
 		showBigFourNumbers = !showBigFourNumbers;
+	}
+
+	void CenterPinRot( float rotDir, float fElapsedTime) {
+		centerPinAngle -= 0.5f * fElapsedTime;
+		if (centerPinAngle < 0.0f)
+			centerPinAngle = (3.14159265f * 2) - 0.01f;
+		if (centerPinAngle > 3.14159265f * 2)
+			centerPinAngle = 0.01f;
 	}
 
 private:
@@ -58,6 +66,6 @@ private:
 	olc::PixelGameEngine* pge;
 	bool showDigital{ true };
 	bool showBigFourNumbers{ true };
-
+	float centerPinAngle{ 3.1415f * 2.0f };
 	olc::Renderable clockDisk, hourHandle, centerPin;
 };

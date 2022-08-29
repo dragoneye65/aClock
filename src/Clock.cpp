@@ -32,7 +32,7 @@ void Clock::Init() {
 
 }
 
-void Clock::Draw(olc::vi2d pos) {
+void Clock::Draw(olc::vi2d pos, float fElapsedTime) {
 	origo = pos;
 
 	pge->SetDrawTarget(clockDisk.Sprite() );
@@ -54,8 +54,8 @@ void Clock::Draw(olc::vi2d pos) {
 	strTime = strHour + ":" + strMin + ":" + strSec;
 
 	// draw the disk
-	pge->FillCircle({ pge->ScreenWidth() / 2, pge->ScreenHeight() / 2 }, clockRadius, olc::VERY_DARK_BLUE);
-	pge->DrawCircle({ pge->ScreenWidth() / 2, pge->ScreenHeight() / 2 }, clockRadius, olc::RED);
+	pge->FillCircle({ pge->ScreenWidth() / 2, pge->ScreenHeight() / 2 }, static_cast<int32_t>(clockRadius), olc::VERY_DARK_BLUE);
+	pge->DrawCircle({ pge->ScreenWidth() / 2, pge->ScreenHeight() / 2 }, static_cast<int32_t>(clockRadius), olc::RED);
 
 	// digital clock
 	if (showDigital) {
@@ -176,14 +176,16 @@ void Clock::Draw(olc::vi2d pos) {
 	// minute handle
 	pge->DrawRotatedDecal(olc::vi2d{ pge->ScreenWidth() / 2, (pge->ScreenHeight() / 2) },
 		hourHandle.Decal(),
-		hourRad,
+		hourRad+(minRad/M_PI*2/12),
 		olc::vi2d{ hourHandle.Sprite()->width / 2 , hourHandle.Sprite()->height + 50 },
 		{ 0.3f, 0.3f });
 
 	// middle nob, star
+	CenterPinRot(-0.5f, fElapsedTime);
+
 	pge->DrawRotatedDecal( olc::vi2d{ pge->ScreenWidth() / 2, (pge->ScreenHeight() / 2)},
 		centerPin.Decal(),
-		M_PI/4,
+		centerPinAngle,
 		olc::vi2d{ centerPin.Sprite()->width / 2 , centerPin.Sprite()->height / 2 },
 		{ 0.3f, 0.3f });
 

@@ -101,7 +101,7 @@ public:
 			playOnce = false;
 		}
 
-		myClock.Draw({ ScreenWidth() / 2, (ScreenHeight() / 2) + 1 });
+		myClock.Draw({ ScreenWidth() / 2, (ScreenHeight() / 2) + 1 }, fElapsedTime);
 
 		if (GetMouse(1).bHeld) {
 			#if defined(_WIN32) && !defined(__MINGW32__)
