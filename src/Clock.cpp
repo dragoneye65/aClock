@@ -176,7 +176,7 @@ void Clock::Draw(olc::vi2d pos, float fElapsedTime) {
 	// minute handle
 	pge->DrawRotatedDecal(olc::vi2d{ pge->ScreenWidth() / 2, (pge->ScreenHeight() / 2) },
 		hourHandle.Decal(),
-		hourRad+(minRad/M_PI*2/12),
+		static_cast<float>(hourRad+(minRad/M_PI*2/12)),
 		olc::vi2d{ hourHandle.Sprite()->width / 2 , hourHandle.Sprite()->height + 50 },
 		{ 0.3f, 0.3f });
 
