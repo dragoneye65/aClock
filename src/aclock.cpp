@@ -125,14 +125,16 @@ public:
 		if (GetMouse(1).bHeld) {
 			#if defined(_WIN32) && !defined(__MINGW32__)
 				GetCursorPos(&mPoint);
-				SetWindowPos( hWnd,	HWND_TOP, mPoint.x - ScreenWidth() / 2, mPoint.y - ScreenHeight() / 2, 0, 0, SWP_NOSIZE);
+				SetWindowPos( hWnd,	HWND_TOP, mPoint.x - ScreenWidth() / 2, mPoint.y -40 - ScreenHeight() / 2, 0, 0, SWP_NOSIZE);
 			#endif
 		}
 		
 		if (GetMouse(0).bReleased) {
 			if ( myClock.isNobHovered(GetMousePos())) {
 				onTopToggle = !onTopToggle;
+#if defined(_WIN32) && !defined(__MINGW32__)
 				(void) SetWindowTop(onTopToggle);
+#endif
 			}
 			else {
 				myClock.ToggleDigitalClock();

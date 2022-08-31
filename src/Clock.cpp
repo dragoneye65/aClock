@@ -54,7 +54,8 @@ void Clock::Draw(olc::vi2d pos, float fElapsedTime) {
 	strTime = strHour + ":" + strMin + ":" + strSec;
 
 	// draw the disk
-	pge->FillCircle({ pge->ScreenWidth() / 2, pge->ScreenHeight() / 2 }, static_cast<int32_t>(clockRadius), olc::VERY_DARK_BLUE);
+	pge->Clear(olc::BLANK);
+	// pge->FillCircle({ pge->ScreenWidth() / 2, pge->ScreenHeight() / 2 }, static_cast<int32_t>(clockRadius), olc::VERY_DARK_BLUE);
 	pge->DrawCircle({ pge->ScreenWidth() / 2, pge->ScreenHeight() / 2 }, static_cast<int32_t>(clockRadius), olc::RED);
 
 	// digital clock
