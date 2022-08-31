@@ -183,7 +183,9 @@ void Clock::Draw(olc::vi2d pos, float fElapsedTime) {
 	// middle nob, star
 	CenterPinRot(-0.5f, fElapsedTime);
 
-	pge->DrawRotatedDecal( olc::vi2d{ pge->ScreenWidth() / 2, (pge->ScreenHeight() / 2)},
+	centerPinPos = { pge->ScreenWidth() / 2, (pge->ScreenHeight() / 2) };
+	// pge->DrawRotatedDecal( olc::vi2d{ pge->ScreenWidth() / 2, (pge->ScreenHeight() / 2)},
+	pge->DrawRotatedDecal( centerPinPos ,
 		centerPin.Decal(),
 		centerPinAngle,
 		olc::vi2d{ centerPin.Sprite()->width / 2 , centerPin.Sprite()->height / 2 },

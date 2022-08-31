@@ -29,7 +29,7 @@ HWND SetTransparacy() {
 
 	// get the window handle 
 	HWND hWnd = GetForegroundWindow();
-
+	// HWND_TOPMOST
 	// set the new extended style and style flags to the existing window
 	SetWindowLongW(hWnd, GWL_EXSTYLE, dwExStyle);
 	SetWindowLongW(hWnd, GWL_STYLE, dwStyle);
@@ -38,8 +38,22 @@ HWND SetTransparacy() {
 	// BOOL SetLayeredWindowAttributes(HWND hwnd,COLORREF crKey, BYTE bAlpha, DWORD dwFlags);
 	SetLayeredWindowAttributes(hWnd, RGB(0, 0, 0), 0x0, LWA_COLORKEY);
 
+	SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	
 	return hWnd;
 	
+}
+
+HWND SetWindowTop(bool isTopMost) {
+	// get the window handle 
+	HWND hWnd = GetForegroundWindow();
+
+	if ( isTopMost)
+		SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	else
+		SetWindowPos(hWnd, 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+
+	return hWnd;
 }
 #endif
 
@@ -68,7 +82,7 @@ public:
 	// Play the sound once upon startup, false for not.
 	bool playOnce{false};
 
-
+	bool onTopToggle{ true};
 
 public:
 
@@ -111,8 +125,16 @@ public:
 		}
 		
 		if (GetMouse(0).bReleased) {
-			myClock.ToggleDigitalClock();
-			myClock.ToggleBigFour();
+			bool isNobHovered = myClock.isNobHovered( GetMousePos());
+			if (isNobHovered) {
+				onTopToggle = !onTopToggle;
+				(void) SetWindowTop(onTopToggle);
+				std::cout << "Center nub overed and clicked\n";
+			}
+			else {
+				myClock.ToggleDigitalClock();
+				myClock.ToggleBigFour();
+			}
 		}
 
 		if (GetKey(olc::ESCAPE).bPressed)

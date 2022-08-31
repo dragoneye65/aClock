@@ -42,12 +42,21 @@ public:
 		showBigFourNumbers = !showBigFourNumbers;
 	}
 
-	void CenterPinRot( float rotDir, float fElapsedTime) {
+	void CenterPinRot(float rotDir, float fElapsedTime) {
 		centerPinAngle -= 0.5f * fElapsedTime;
 		if (centerPinAngle < 0.0f)
 			centerPinAngle = (3.14159265f * 2) - 0.01f;
 		if (centerPinAngle > 3.14159265f * 2)
 			centerPinAngle = 0.01f;
+	}
+
+	bool isNobHovered( olc::vi2d mPos) {
+		int clickedRadius = 5;
+		if (mPos.x > centerPinPos.x - clickedRadius && mPos.x < centerPinPos.x + clickedRadius)
+			if (mPos.y > centerPinPos.y - clickedRadius && mPos.y < centerPinPos.y + clickedRadius)
+				return true;
+
+		return false;
 	}
 
 private:
@@ -67,5 +76,6 @@ private:
 	bool showDigital{ true };
 	bool showBigFourNumbers{ true };
 	float centerPinAngle{ 3.1415f * 2.0f };
+	olc::vi2d centerPinPos{ 0, 0};
 	olc::Renderable clockDisk, hourHandle, centerPin;
 };
