@@ -31,14 +31,14 @@ HWND SetTransparacy() {
 	HWND hWnd = GetForegroundWindow();
 	// HWND_TOPMOST
 	// set the new extended style and style flags to the existing window
-	SetWindowLongW(hWnd, GWL_EXSTYLE, dwExStyle);
-	SetWindowLongW(hWnd, GWL_STYLE, dwStyle);
+	SetWindowLongW(hWnd, GWL_EXSTYLE, WS_EX_LAYERED);
+	SetWindowLongW(hWnd, GWL_STYLE, WS_VISIBLE | WS_POPUP);
 
 	// Use crKey as the transparency color. In our case it is black
 	// BOOL SetLayeredWindowAttributes(HWND hwnd,COLORREF crKey, BYTE bAlpha, DWORD dwFlags);
 	SetLayeredWindowAttributes(hWnd, RGB(0, 0, 0), 0x0, LWA_COLORKEY);
 
-	SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	// SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 	
 	return hWnd;
 	
@@ -50,8 +50,12 @@ HWND SetWindowTop(bool isTopMost) {
 
 	if ( isTopMost)
 		SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-	else
-		SetWindowPos(hWnd, 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	else {
+		SetWindowLongW(hWnd, GWL_EXSTYLE, WS_EX_LAYERED);
+		SetWindowLongW(hWnd, GWL_STYLE, WS_VISIBLE | WS_POPUP);
+		SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+		// SetWindowLongPtrW(hWnd, WS_VISIBLE | WS_POPUP, WS_OVERLAPPEDWINDOW);
+	}
 
 	return hWnd;
 }
@@ -82,7 +86,8 @@ public:
 	// Play the sound once upon startup, false for not.
 	bool playOnce{false};
 
-	bool onTopToggle{ true};
+	bool onTopToggle{ false};
+
 
 public:
 
@@ -125,11 +130,9 @@ public:
 		}
 		
 		if (GetMouse(0).bReleased) {
-			bool isNobHovered = myClock.isNobHovered( GetMousePos());
-			if (isNobHovered) {
+			if ( myClock.isNobHovered(GetMousePos())) {
 				onTopToggle = !onTopToggle;
 				(void) SetWindowTop(onTopToggle);
-				std::cout << "Center nub overed and clicked\n";
 			}
 			else {
 				myClock.ToggleDigitalClock();

@@ -52,9 +52,12 @@ public:
 
 	bool isNobHovered( olc::vi2d mPos) {
 		int clickedRadius = 5;
-		if (mPos.x > centerPinPos.x - clickedRadius && mPos.x < centerPinPos.x + clickedRadius)
-			if (mPos.y > centerPinPos.y - clickedRadius && mPos.y < centerPinPos.y + clickedRadius)
+		int yPlusWhyyyyy = 40;
+		if (mPos.x > centerPinPos.x - clickedRadius && mPos.x < centerPinPos.x + clickedRadius) {
+			if (mPos.y > centerPinPos.y + yPlusWhyyyyy - clickedRadius && mPos.y < centerPinPos.y + yPlusWhyyyyy + clickedRadius) {
 				return true;
+			}
+		}
 
 		return false;
 	}
