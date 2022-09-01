@@ -59,6 +59,48 @@ HWND SetWindowTop(bool isTopMost) {
 
 	return hWnd;
 }
+
+// https://faithlife.codes/blog/2008/09/displaying_a_splash_screen_with_c_introduction/
+void SetSplashImage(HWND hwndSplash, HBITMAP hbmpSplash)
+{
+	// get the size of the bitmap
+	BITMAP bm;
+	GetObject(hbmpSplash, sizeof(bm), &bm);
+	SIZE sizeSplash = { bm.bmWidth, bm.bmHeight };
+
+	// get the primary monitor's info
+	POINT ptZero = { 0 };
+	HMONITOR hmonPrimary = MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY);
+	MONITORINFO monitorinfo = { 0 };
+	monitorinfo.cbSize = sizeof(monitorinfo);
+	GetMonitorInfo(hmonPrimary, &monitorinfo);
+
+	// center the splash screen in the middle of the primary work area
+	const RECT& rcWork = monitorinfo.rcWork;
+	POINT ptOrigin;
+	ptOrigin.x = 0;
+	ptOrigin.y = rcWork.top + (rcWork.bottom - rcWork.top - sizeSplash.cy) / 2;
+
+	// create a memory DC holding the splash bitmap
+	HDC hdcScreen = GetDC(NULL);
+	HDC hdcMem = CreateCompatibleDC(hdcScreen);
+	HBITMAP hbmpOld = (HBITMAP)SelectObject(hdcMem, hbmpSplash);
+
+	// use the source image's alpha channel for blending
+	BLENDFUNCTION blend = { 0 };
+	blend.BlendOp = AC_SRC_OVER;
+	blend.SourceConstantAlpha = 255;
+	blend.AlphaFormat = AC_SRC_ALPHA;
+
+	// paint the window (in the right location) with the alpha-blended bitmap
+	UpdateLayeredWindow(hwndSplash, hdcScreen, &ptOrigin, &sizeSplash,
+		hdcMem, &ptZero, RGB(0, 0, 0), &blend, ULW_ALPHA);
+
+	// delete temporary objects
+	SelectObject(hdcMem, hbmpOld);
+	DeleteDC(hdcMem);
+	ReleaseDC(NULL, hdcScreen);
+}
 #endif
 
 
@@ -84,9 +126,9 @@ public:
 	#endif
 
 	// Play the sound once upon startup, false for not.
-	bool playOnce{false};
-
+	bool playOnce{ false};
 	bool onTopToggle{ false};
+	bool isFireworks{ false};
 
 
 public:
@@ -135,11 +177,18 @@ public:
 #if defined(_WIN32) && !defined(__MINGW32__)
 				(void) SetWindowTop(onTopToggle);
 #endif
+				isFireworks = true;
+				playOnce = true;
 			}
 			else {
 				myClock.ToggleDigitalClock();
 				myClock.ToggleBigFour();
 			}
+		}
+
+		// do the fireworks
+		if (isFireworks) {
+
 		}
 
 		if (GetKey(olc::ESCAPE).bPressed)
