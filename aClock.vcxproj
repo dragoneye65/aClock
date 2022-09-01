@@ -148,6 +148,7 @@
   <ItemGroup>
     <ClCompile Include="src\aclock.cpp" />
     <ClCompile Include="src\Clock.cpp" />
+    <ClCompile Include="src\Particle.cpp" />
     <ClCompile Include="src\PGE.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -155,6 +156,7 @@
     <ClInclude Include="include\olcPGEX_Sound.h" />
     <ClInclude Include="include\olcPixelGameEngine.h" />
     <ClInclude Include="include\olcSoundWaveEngine.h" />
+    <ClInclude Include="include\Particle.h" />
     <ClInclude Include="include\PGE.h" />
     <ClInclude Include="include\pianoSample.h" />
   </ItemGroup>
