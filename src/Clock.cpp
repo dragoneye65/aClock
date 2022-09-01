@@ -14,10 +14,10 @@
 #include "Clock.h"
 
 void Clock::Init() {
-	hourHandle.Load("res/images/hourHandle.png", nullptr, true);
-	centerPin.Load("res/images/centerPin.png", nullptr, true);
+	hourHandle.Load("res/images/hourHandle.png", nullptr, false);
+	centerPin.Load("res/images/centerPin.png", nullptr, false);
 	
-	clockDisk.Create( pge->ScreenWidth(), pge->ScreenHeight(), true);
+	clockDisk.Create( pge->ScreenWidth(), pge->ScreenHeight(), false);
 
 	SetRadius( (pge->ScreenHeight() / 2.0f) -1);
 
