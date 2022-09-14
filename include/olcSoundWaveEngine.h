@@ -1,6 +1,6 @@
 /*
 	+-------------------------------------------------------------+
-	|             OneLoneCoder Sound Wave Engine v0.01            |
+	|             OneLoneCoder Sound Wave Engine v0.02            |
 	|  "You wanted noise? Well is this loud enough?" - javidx9    |
 	+-------------------------------------------------------------+
 
@@ -66,16 +66,13 @@
 
 	Thanks
 	~~~~~~
-	Slavka     - OpenAL and ALSA
-	MaGetzUb   - XAudio
-	Gorbit99   - Testing, Bug Fixes
-	Cyberdroid - Testing, Bug Fixes
-	Dragoneye  - Testing
-	Puol       - Testing
+	Gorbit99, Dragoneye, Puol
 
-	Author
-	~~~~~~
-	David Barr, aka javidx9, �OneLoneCoder 2019, 2020, 2021, 2022
+	Authors
+	~~~~~~~
+	slavka, MaGetzUb, cstd, Moros1138 & javidx9
+
+	(c)OneLoneCoder 2019, 2020, 2021, 2022
 */
 
 
@@ -106,7 +103,20 @@
 	4) Set this "Compiler Option": -std=c++17
 */
 
+/*
+	Using & Installing On Linux
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+	GNU Compiler Collection (GCC)
+	~~~~~~~~~~~~~~~~~~~~~~~
+	1) Include the header file "olcSoundWaveEngine.h" from a .cpp file in your project.
+	2) Build with the following command:
+
+		g++ olcSoundWaveEngineExample.cpp -o olcSoundWaveEngineExample -lpulse -lpulse-simple -std=c++17
+
+	3) That's it!
+	
+*/
 
 /*
 	Using in multiple-file projects
@@ -131,6 +141,15 @@
 		  +Loading form WAV files
 		  +LERPed sampling from all buffers
 		  +Multi-channel audio support
+	0.02: +Support multi-channel wave files
+		  +Support for 24-bit wave files
+		  +Wave files are now sample rate invariant
+		  +Linux PulseAudio Updated
+		  +Linux ALSA Updated
+		  +WinMM Updated
+		  +CMake Compatibility
+		  =Fix wave format durations preventing playback
+		  =Various bug fixes
 */
 
 #pragma once
@@ -155,13 +174,14 @@
 // Compiler/System Sensitivity
 #if !defined(SOUNDWAVE_USING_WINMM) && !defined(SOUNDWAVE_USING_WASAPI) &&  \
     !defined(SOUNDWAVE_USING_XAUDIO) && !defined(SOUNDWAVE_USING_OPENAL) && \
-    !defined(SOUNDWAVE_USING_ALSA) && !defined(SOUNDWAVE_USING_SDLMIXER)    \
+    !defined(SOUNDWAVE_USING_ALSA) && !defined(SOUNDWAVE_USING_SDLMIXER) && \
+    !defined(SOUNDWAVE_USING_PULSE)                                         \
 
 	#if defined(_WIN32)
 		#define SOUNDWAVE_USING_WINMM
 	#endif
 	#if defined(__linux__)
-		#define SOUNDWAVE_USING_ALSA
+		#define SOUNDWAVE_USING_PULSE
 	#endif
 	#if defined(__APPLE__)
 		#define SOUNDWAVE_USING_SDLMIXER
@@ -806,8 +826,12 @@ namespace olc::sound::driver
 	class RingBuffer
 	{
 	public:
-		RingBuffer(unsigned int bufnum, unsigned int buflen): m_vBuffers(bufnum)
+		RingBuffer()
+		{ }
+
+		void Resize(unsigned int bufnum = 0, unsigned int buflen = 0)
 		{
+			m_vBuffers.resize(bufnum);
 			for (auto &vBuffer : m_vBuffers)
 				vBuffer.resize(buflen);
 		}
@@ -874,6 +898,33 @@ namespace olc::sound::driver
 }
 #endif // SOUNDWAVE_USING_ALSA
 
+#if defined(SOUNDWAVE_USING_PULSE)
+#include <pulse/simple.h>
+
+namespace olc::sound::driver
+{
+	class PulseAudio : public Base
+	{
+	public:
+		PulseAudio(WaveEngine* pHost);
+		~PulseAudio();
+
+	protected:
+		bool Open(const std::string& sOutputDevice, const std::string& sInputDevice) 	override;
+		bool Start() 	override;
+		void Stop()		override;
+		void Close()	override;
+
+	private:
+		void DriverLoop();
+
+		pa_simple *m_pPA;
+		std::atomic<bool> m_bDriverLoopActive{ false };
+		std::thread m_thDriverLoop;
+	};
+}
+#endif // SOUNDWAVE_USING_PULSE
+
 #ifdef OLC_SOUNDWAVE
 #undef OLC_SOUNDWAVE
 
@@ -906,6 +957,10 @@ namespace olc::sound
 
 #if defined(SOUNDWAVE_USING_SDLMIXER)
 		m_driver = std::make_unique<driver::SDLMixer>(this);
+#endif
+
+#if defined(SOUNDWAVE_USING_PULSE)
+		m_driver = std::make_unique<driver::PulseAudio>(this);
 #endif
 	}
 
@@ -1327,9 +1382,9 @@ namespace olc::sound
 			random_seed += 0xe120fc15;
 			uint64_t tmp;
 			tmp = (uint64_t)random_seed * 0x4a39b70d;
-			uint32_t m1 = (tmp >> 32) ^ tmp;
+			uint32_t m1 = uint32_t(((tmp >> 32) ^ tmp) & 0xFFFFFFFF);
 			tmp = (uint64_t)m1 * 0x12fad5c9;
-			uint32_t m2 = (tmp >> 32) ^ tmp;
+			uint32_t m2 = uint32_t(((tmp >> 32) ^ tmp) & 0xFFFFFFFF);
 			return m2;
 		}
 	}
@@ -1529,15 +1584,15 @@ bool SDLMixer::Open(const std::string& sOutputDevice, const std::string& sInputD
     {
         case AUDIO_F32:
         case AUDIO_S32:
-            bufferSize = m_pHost->GetBlockSampleCount() * 4;
+            bufferSize = m_pHost->GetBlockSampleCount() * m_pHost->GetChannels() * 4;
             break;
         case AUDIO_S16:
         case AUDIO_U16:
-            bufferSize = m_pHost->GetBlockSampleCount() * 2;
+            bufferSize = m_pHost->GetBlockSampleCount() * m_pHost->GetChannels() * 2;
             break;
         case AUDIO_S8:
         case AUDIO_U8:
-            bufferSize = m_pHost->GetBlockSampleCount() * 1;
+            bufferSize = m_pHost->GetBlockSampleCount() * m_pHost->GetChannels() * 1;
             break;
         default:
             std::cerr << "Audio format of device '" << sOutputDevice << "' is not supported" << std::endl;
@@ -1596,7 +1651,12 @@ void SDLMixer::FillChunkBuffer(const std::vector<float>& userData) const
 
 void SDLMixer::SDLMixerCallback(int channel)
 {
-    static std::vector<float> userData(instance->m_pHost->GetBlockSampleCount());
+    static std::vector<float> userData(instance->m_pHost->GetBlockSampleCount() * instance->m_pHost->GetChannels());
+
+    if (channel != 0)
+    {
+        std::cerr << "Unexpected channel number" << std::endl;
+    }
 
     // Don't add another chunk if we should not keep running
     if (!instance->m_keepRunning)
@@ -1605,7 +1665,7 @@ void SDLMixer::SDLMixerCallback(int channel)
     instance->GetFullOutputBlock(userData);
     instance->FillChunkBuffer(userData);
 
-    if (Mix_PlayChannel(channel, &instance->audioChunk, 0) == -1)
+    if (Mix_PlayChannel(0, &instance->audioChunk, 0) == -1)
     {
         std::cerr << "Error while playing Chunk" << std::endl;
     }
@@ -1649,7 +1709,7 @@ void SDLMixer::Close()
 // ALSA Driver Implementation
 namespace olc::sound::driver
 {
-	ALSA::ALSA(WaveEngine* pHost) : Base(pHost), m_rBuffers(pHost->GetBlocks(), pHost->GetBlockSampleCount())
+	ALSA::ALSA(WaveEngine* pHost) : Base(pHost)
 	{ }
 
 	ALSA::~ALSA()
@@ -1683,7 +1743,7 @@ namespace olc::sound::driver
 		snd_pcm_hw_params_set_format(m_pPCM, params, SND_PCM_FORMAT_FLOAT);
 		snd_pcm_hw_params_set_rate(m_pPCM, params, m_pHost->GetSampleRate(), 0);
 		snd_pcm_hw_params_set_channels(m_pPCM, params, m_pHost->GetChannels());
-		snd_pcm_hw_params_set_period_size(m_pPCM, params, m_pHost->GetBlockSampleCount() / m_pHost->GetChannels(), 0);
+		snd_pcm_hw_params_set_period_size(m_pPCM, params, m_pHost->GetBlockSampleCount(), 0);
 		snd_pcm_hw_params_set_periods(m_pPCM, params, m_pHost->GetBlocks(), 0);
 
 		// Save these parameters
@@ -1697,10 +1757,12 @@ namespace olc::sound::driver
 	bool ALSA::Start()
 	{
 		// Unsure if really needed, helped prevent underrun on my setup
-		std::vector<float> vSilence(m_pHost->GetBlockSampleCount(), 0.0f);
+		std::vector<float> vSilence(m_pHost->GetBlockSampleCount() * m_pHost->GetChannels(), 0.0f);
 		snd_pcm_start(m_pPCM);
 		for (unsigned int i = 0; i < m_pHost->GetBlocks(); i++)
-			snd_pcm_writei(m_pPCM, vSilence.data(), m_pHost->GetBlockSampleCount() / m_pHost->GetChannels());
+			snd_pcm_writei(m_pPCM, vSilence.data(), m_pHost->GetBlockSampleCount());
+
+		m_rBuffers.Resize(m_pHost->GetBlocks(), m_pHost->GetBlockSampleCount() * m_pHost->GetChannels());
 
 		snd_pcm_start(m_pPCM);
 		m_bDriverLoopActive = true;
@@ -1718,7 +1780,8 @@ namespace olc::sound::driver
 		if (m_thDriverLoop.joinable())
 			m_thDriverLoop.join();
 
-		snd_pcm_drop(m_pPCM);
+		if (m_pPCM != nullptr)
+			snd_pcm_drop(m_pPCM);
 	}
 
 	void ALSA::Close()
@@ -1734,7 +1797,7 @@ namespace olc::sound::driver
 
 	void ALSA::DriverLoop()
 	{
-		const uint32_t nFrames = m_pHost->GetBlockSampleCount() / m_pHost->GetChannels();
+		const uint32_t nFrames = m_pHost->GetBlockSampleCount();
 
 		int err;
 		std::vector<pollfd> vFDs;
@@ -1812,6 +1875,87 @@ namespace olc::sound::driver
 		}
 	}
 } // ALSA Driver Implementation
+#endif
+#if defined(SOUNDWAVE_USING_PULSE)
+// PULSE Driver Implementation
+#include <pulse/error.h>
+#include <iostream>
+
+namespace olc::sound::driver
+{
+	PulseAudio::PulseAudio(WaveEngine* pHost) : Base(pHost)
+	{ }
+
+	PulseAudio::~PulseAudio()
+	{
+		Stop();
+		Close();
+	}
+
+	bool PulseAudio::Open(const std::string& sOutputDevice, const std::string& sInputDevice)
+	{
+		pa_sample_spec ss {
+			PA_SAMPLE_FLOAT32, m_pHost->GetSampleRate(), (uint8_t)m_pHost->GetChannels()
+		};
+
+		m_pPA = pa_simple_new(NULL, "olcSoundWaveEngine", PA_STREAM_PLAYBACK, NULL,
+		                      "Output Stream", &ss, NULL, NULL, NULL);
+
+		if (m_pPA == NULL)
+			return false;
+
+		return true;
+	}
+
+	bool PulseAudio::Start()
+	{
+		m_bDriverLoopActive = true;
+		m_thDriverLoop = std::thread(&PulseAudio::DriverLoop, this);
+
+		return true;
+	}
+
+	void PulseAudio::Stop()
+	{
+		// Signal the driver loop to exit
+		m_bDriverLoopActive = false;
+
+		// Wait for driver thread to exit gracefully
+		if (m_thDriverLoop.joinable())
+			m_thDriverLoop.join();
+	}
+
+	void PulseAudio::Close()
+	{
+		if (m_pPA != nullptr)
+		{
+			pa_simple_free(m_pPA);
+			m_pPA = nullptr;
+		}
+	}
+
+	void PulseAudio::DriverLoop()
+	{
+		// We will be using this vector to transfer to the host for filling, with
+		// user sound data (float32, -1.0 --> +1.0)
+		std::vector<float> vFloatBuffer(m_pHost->GetBlockSampleCount() * m_pHost->GetChannels(), 0.0f);
+
+		// While the system is active, start requesting audio data
+		while (m_bDriverLoopActive)
+		{
+			// Grab audio data from user
+			GetFullOutputBlock(vFloatBuffer);
+
+			// Fill PulseAudio data buffer
+			int error;
+			if (pa_simple_write(m_pPA, vFloatBuffer.data(),
+			                    vFloatBuffer.size() * sizeof(float), &error) < 0)
+			{
+				std::cerr << "Failed to feed data to PulseAudio: " << pa_strerror(error) << "\n";
+			}
+		}
+	}
+} // PulseAudio Driver Implementation
 #endif
 
 #endif // OLC_SOUNDWAVE IMPLEMENTATION

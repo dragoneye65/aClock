@@ -12,6 +12,7 @@
 */
 
 #include "Clock.h"
+#include <time.h>
 
 void Clock::Init() {
 	hourHandle.Load("res/images/hourHandle.png", nullptr, false);
@@ -41,6 +42,7 @@ void Clock::Draw(olc::vi2d pos, float fElapsedTime) {
 
 	currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 	localtime_s(&now, &currentTime);
+	// localtime_r(&now, &currentTime);
 
 	auto strtmp = std::to_string(now.tm_hour);
 	auto strHour = std::string(2 - std::min(2, int(strtmp.length())), '0') + strtmp;
@@ -114,7 +116,7 @@ void Clock::Draw(olc::vi2d pos, float fElapsedTime) {
 		// draw second markers
 		if (!(i % int(secRes))) {
 			// DrawLine(startDrawOffset, clockOuterMarker);
-			pge->Draw({ int64_t(clockOuterMarker.x), int64_t(clockOuterMarker.y) });
+			pge->Draw( { int64_t( clockOuterMarker.x), int64_t(clockOuterMarker.y) });
 		}
 
 		// Draw hour markers
