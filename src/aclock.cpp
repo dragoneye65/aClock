@@ -156,6 +156,7 @@ public:
 	bool OnUserUpdate(float fElapsedTime) override
 	{
 		Clear(olc::BLANK);
+		olc::vi2d mPos = GetMousePos();
 
 		if (playOnce || GetKey(olc::SPACE).bPressed) {
 			engine.PlayWaveform(&testSound2);
@@ -172,7 +173,9 @@ public:
 		}
 		
 		if (GetMouse(0).bReleased) {
-			if ( myClock.isNobHovered(GetMousePos())) {
+			
+
+			if ( myClock.isNobHovered( mPos /* GetMousePos() */)) {
 				onTopToggle = !onTopToggle;
 #if defined(_WIN32) && !defined(__MINGW32__)
 				(void) SetWindowTop(onTopToggle);
@@ -180,11 +183,21 @@ public:
 				isFireworks = true;
 				playOnce = true;
 			}
+			
 			else {
 				myClock.ToggleDigitalClock();
 				myClock.ToggleBigFour();
 			}
 		}
+
+		// Check if the mouse in over the resize button in the right bottom corner
+		// Warning: This only triggers if the mouse is over some pixels drawn with the app
+		/*
+		if ( ((mPos.x > (ScreenWidth() - 100))  && (mPos.x < ScreenWidth())) &&
+			 ((mPos.y > (ScreenHeight() - 100)) && (mPos.y < ScreenHeight())) ) {
+			    DrawString({ 100, 100 }, "Balls of fury");
+		}
+		*/
 
 		// do the fireworks
 		if (isFireworks) {
