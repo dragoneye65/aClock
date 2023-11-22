@@ -29,6 +29,7 @@ public:
 	}
 
 	void Init();
+	void ResizeWindow( olc::vi2d wSize);
 	void Draw(olc::vi2d pos, float fElapsedTime);
 	void SetRadius(float r) {
 		clockRadius = r;

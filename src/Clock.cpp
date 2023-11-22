@@ -33,6 +33,12 @@ void Clock::Init() {
 
 }
 
+void Clock::ResizeWindow(olc::vi2d wSize)
+{
+
+
+}
+
 void Clock::Draw(olc::vi2d pos, float fElapsedTime) {
 	origo = pos;
 
@@ -116,7 +122,7 @@ void Clock::Draw(olc::vi2d pos, float fElapsedTime) {
 		// draw second markers
 		if (!(i % int(secRes))) {
 			// DrawLine(startDrawOffset, clockOuterMarker);
-			pge->Draw( { int64_t( clockOuterMarker.x), int64_t(clockOuterMarker.y) });
+			pge->Draw( { int32_t( clockOuterMarker.x), int32_t(clockOuterMarker.y) });
 		}
 
 		// Draw hour markers
@@ -158,7 +164,7 @@ void Clock::Draw(olc::vi2d pos, float fElapsedTime) {
 				startDrawOffset.x = float(origo.x + (markerDrawOffset - 12) * cos(i * M_PI / 180 - M_PI / 2));
 				startDrawOffset.y = float(origo.y + (markerDrawOffset - 12) * sin(i * M_PI / 180 - M_PI / 2));
 
-				pge->DrawString( { int64_t(startDrawOffset.x - (strTmp.size() * 8 / 2)), int64_t(startDrawOffset.y - 8 / 2) }, strTmp);
+				pge->DrawString( { int32_t(startDrawOffset.x - (strTmp.size() * 8 / 2)), int32_t(startDrawOffset.y - 8 / 2) }, strTmp);
 			}
 		}
 	}
